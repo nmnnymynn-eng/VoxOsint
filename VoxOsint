@@ -1,1 +1,649 @@
+<!DOCTYPE html>
+<html lang="he" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VoxOsint - Global Reconnaissance & Cyber Intelligence</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rubik+Black&family=Ultra&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --neon-blue: #ffffff;
+            --neon-green: #ffffff;
+            --neon-orange: #ffffff;
+            --dark-bg: #000000;
+            --panel-bg: rgba(0, 0, 0, 0.98);
+            --border-blue: rgba(255, 255, 255, 0.4);
+            --border-green: rgba(255, 255, 255, 0.7);
+        }
 
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--dark-bg);
+            color: #ffffff;
+            font-family: 'Rubik Black', 'Ultra', impact, sans-serif;
+            overflow-x: hidden;
+            user-select: none;
+            letter-spacing: 1px;
+        }
+
+        .heavy-font {
+            font-family: 'Rubik Black', 'Ultra', impact, sans-serif;
+            text-transform: uppercase;
+        }
+
+        /* Glitch / Distressed Text Effect matching B&W theme */
+        .glitch-text {
+            position: relative;
+            color: #ffffff;
+            font-weight: 900;
+            letter-spacing: 6px;
+            text-shadow: 
+                2px 0 #ffffff,
+                -2px 0 #666666,
+                0 0 10px rgba(255, 255, 255, 0.9);
+            animation: glitch-anim 2.5s infinite linear alternate-reverse;
+        }
+
+        @keyframes glitch-anim {
+            0% {
+                text-shadow: 2px 0 #ffffff, -2px 0 #444444, 0 0 12px rgba(255, 255, 255, 0.9);
+            }
+            20% {
+                text-shadow: -2px 0 #cccccc, 2px 0 #333333, 0 0 5px rgba(255, 255, 255, 0.6);
+            }
+            40% {
+                text-shadow: 3px -1px #ffffff, -3px 1px #555555, 1px 0 15px rgba(255, 255, 255, 0.8);
+            }
+            60% {
+                text-shadow: -1px 2px #dddddd, 1px -2px #222222, 0 0 8px rgba(255, 255, 255, 0.7);
+            }
+            80% {
+                text-shadow: 2px -2px #ffffff, -2px 2px #777777, 0 0 20px rgba(255, 255, 255, 0.8);
+            }
+            100% {
+                text-shadow: -2px 0 #444444, 2px 0 #ffffff, 0 0 10px rgba(255, 255, 255, 0.9);
+            }
+        }
+
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            background: #000000;
+        }
+
+        #login-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #000000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(25px);
+            transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .lock-card {
+            background: rgba(0, 0, 0, 0.98);
+            border: 3px solid #ffffff;
+            padding: 50px 45px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 0 60px rgba(255, 255, 255, 0.25), inset 0 0 20px rgba(255, 255, 255, 0.1);
+            width: 480px;
+            max-width: 92vw;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .lock-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+            transform: rotate(45deg);
+            animation: scanline 4s linear infinite;
+        }
+
+        @keyframes scanline {
+            0% { transform: translateY(-100%) rotate(45deg); }
+            100% { transform: translateY(100%) rotate(45deg); }
+        }
+
+        .logo-container {
+            width: 140px;
+            height: 140px;
+            margin: 0 auto 20px auto;
+            filter: drop-shadow(0 0 25px rgba(255, 255, 255, 0.7));
+            animation: pulseLogo 3s infinite alternate;
+        }
+
+        @keyframes pulseLogo {
+            0% { transform: scale(1); filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.5)); }
+            100% { transform: scale(1.08); filter: drop-shadow(0 0 35px rgba(255, 255, 255, 0.9)); }
+        }
+
+        .lock-title {
+            font-size: 50px;
+            line-height: 1;
+            margin: 0 0 8px 0;
+            letter-spacing: 6px;
+            color: #ffffff;
+        }
+
+        .lock-subtitle {
+            color: #cccccc;
+            font-size: 11px;
+            margin-bottom: 35px;
+            letter-spacing: 4px;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .passcode-wrapper {
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        .login-input {
+            width: 100%;
+            background: #000000;
+            border: 2px solid #ffffff;
+            color: #ffffff;
+            padding: 18px;
+            border-radius: 12px;
+            font-size: 22px;
+            text-align: center;
+            outline: none;
+            box-sizing: border-box;
+            letter-spacing: 8px;
+            box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .login-input:focus {
+            border-color: #ffffff;
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.8), inset 0 0 20px rgba(255, 255, 255, 0.4);
+        }
+
+        .framed-btn {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            color: #ffffff;
+            border: 2px solid #ffffff;
+            padding: 18px;
+            border-radius: 12px;
+            font-size: 15px;
+            cursor: pointer;
+            letter-spacing: 3px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2), inset 0 0 10px rgba(255, 255, 255, 0.1);
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+        }
+
+        .framed-btn:hover {
+            background: #ffffff;
+            color: #000000;
+            border-color: #ffffff;
+            box-shadow: 0 0 45px rgba(255, 255, 255, 0.9), inset 0 0 20px rgba(0, 0, 0, 0.2);
+            transform: translateY(-3px) scale(1.02);
+            text-shadow: none;
+        }
+
+        .error-msg {
+            color: #ffffff;
+            background: #111111;
+            border: 1px solid #ffffff;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            margin-top: 18px;
+            display: none;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+            animation: shake 0.4s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px); }
+            40%, 80% { transform: translateX(8px); }
+        }
+
+        #main-app {
+            display: none;
+            padding: 35px;
+            max-width: 1450px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 2px solid #ffffff;
+            background: rgba(0, 0, 0, 0.98);
+            backdrop-filter: blur(15px);
+            padding: 22px 32px;
+            border-radius: 16px;
+            margin-bottom: 35px;
+            box-shadow: 0 0 35px rgba(255, 255, 255, 0.2);
+        }
+
+        .brand h1 {
+            margin: 0;
+            font-size: 42px;
+            letter-spacing: 6px;
+        }
+
+        .tool-tab {
+            background: #000000;
+            border: 2px solid #555555;
+            color: #aaaaaa;
+            padding: 16px 28px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 13px;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.05);
+        }
+
+        .tool-tab:hover, .tool-tab.active {
+            background: #ffffff;
+            border-color: #ffffff;
+            color: #000000;
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.7);
+            transform: translateY(-3px);
+            text-shadow: none;
+        }
+
+        .workspace {
+            background: rgba(0, 0, 0, 0.98);
+            border: 2px solid #ffffff;
+            border-radius: 18px;
+            padding: 50px;
+            box-shadow: 0 0 50px rgba(255, 255, 255, 0.15);
+            min-height: 500px;
+            position: relative;
+            backdrop-filter: blur(20px);
+        }
+
+        .tool-panel {
+            display: none;
+        }
+
+        .tool-panel.active {
+            display: block;
+        }
+
+        .osint-input {
+            background: #000000;
+            border: 2px solid #777777;
+            color: #ffffff;
+            padding: 18px 24px;
+            border-radius: 12px;
+            font-size: 18px;
+            outline: none;
+            transition: 0.3s;
+            box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.1);
+        }
+
+        .osint-input:focus {
+            border-color: #ffffff;
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.6), inset 0 0 15px rgba(255, 255, 255, 0.2);
+        }
+
+        .results-box {
+            background: #000000;
+            border: 2px solid #ffffff;
+            border-radius: 12px;
+            padding: 30px;
+            font-size: 14px;
+            line-height: 1.8;
+            color: #ffffff;
+            max-height: 400px;
+            overflow-y: auto;
+            display: none;
+            box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.15);
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Pitch Black Background Canvas with White Wavy Grid -->
+    <canvas id="bg-canvas"></canvas>
+
+    <div id="login-screen">
+        <div class="lock-card heavy-font">
+            <!-- Anonymous Emblem SVG Logo in Black & White -->
+            <div class="logo-container">
+                <svg viewBox="0 0 200 200" width="100%" height="100%">
+                    <circle cx="100" cy="100" r="95" fill="#000000" stroke="#ffffff" stroke-width="4"/>
+                    
+                    <!-- Laurel Leaves Left -->
+                    <g fill="#ffffff">
+                        <path d="M 40,150 C 25,120 25,80 50,50 C 45,70 45,110 60,135 Z"/>
+                        <path d="M 30,130 C 15,105 20,70 40,45 C 38,65 42,95 52,118 Z"/>
+                        <path d="M 50,165 C 32,140 30,100 58,70 C 52,90 52,125 68,148 Z"/>
+                    </g>
+                    <!-- Laurel Leaves Right -->
+                    <g fill="#ffffff">
+                        <path d="M 160,150 C 175,120 175,80 150,50 C 155,70 155,110 140,135 Z"/>
+                        <path d="M 170,130 C 185,105 180,70 160,45 C 162,65 158,95 148,118 Z"/>
+                        <path d="M 150,165 C 168,140 170,100 142,70 C 148,90 148,125 132,148 Z"/>
+                    </g>
+                    
+                    <!-- Globe Grid -->
+                    <circle cx="100" cy="100" r="62" fill="none" stroke="#ffffff" stroke-width="3" opacity="0.8"/>
+                    <ellipse cx="100" cy="100" rx="62" ry="25" fill="none" stroke="#ffffff" stroke-width="2" opacity="0.6"/>
+                    <ellipse cx="100" cy="100" rx="30" ry="62" fill="none" stroke="#ffffff" stroke-width="2" opacity="0.6"/>
+                    <line x1="38" y1="100" x2="162" y2="100" stroke="#ffffff" stroke-width="2" opacity="0.7"/>
+                    <line x1="100" y1="38" x2="100" y2="162" stroke="#ffffff" stroke-width="2" opacity="0.7"/>
+
+                    <!-- Suit and Tie Anonymous Silhouette -->
+                    <path d="M 68,175 L 82,102 L 100,128 L 118,102 L 132,175 Z" fill="#ffffff"/>
+                    <path d="M 91,102 L 100,122 L 109,102 L 105,92 L 95,92 Z" fill="#000000"/>
+                    <polygon points="100,102 96,138 100,148 104,138" fill="#000000"/>
+                    
+                    <!-- Question Mark Head -->
+                    <text x="100" y="82" font-family="'Rubik Black', sans-serif" font-size="28" font-weight="900" fill="#ffffff" text-anchor="middle">?</text>
+                </svg>
+            </div>
+            
+            <h2 class="lock-title glitch-text">VOXOSINT</h2>
+            <p class="lock-subtitle">GLOBAL INTELLIGENCE NETWORK v6.0</p>
+            
+            <div class="passcode-wrapper">
+                <input type="password" id="passcode-input" class="login-input heavy-font" placeholder="ENTER ACCESS CODE" autofocus>
+            </div>
+            <button class="framed-btn heavy-font" onclick="verifyCode()">AUTHENTICATE NODE</button>
+            <div id="error-msg" class="error-msg heavy-font">[!] ACCESS DENIED: INVALID PASSCODE</div>
+        </div>
+    </div>
+
+    <div id="main-app" class="heavy-font">
+        <header>
+            <div class="flex items-center gap-5">
+                <div class="w-14 h-14">
+                    <svg viewBox="0 0 200 200" width="100%" height="100%">
+                        <circle cx="100" cy="100" r="95" fill="#000000" stroke="#ffffff" stroke-width="5"/>
+                        <circle cx="100" cy="100" r="62" fill="none" stroke="#ffffff" stroke-width="3"/>
+                        <ellipse cx="100" cy="100" rx="62" ry="25" fill="none" stroke="#ffffff" stroke-width="2"/>
+                        <ellipse cx="100" cy="100" rx="30" ry="62" fill="none" stroke="#ffffff" stroke-width="2"/>
+                        <path d="M 68,175 L 82,102 L 100,128 L 118,102 L 132,175 Z" fill="#ffffff"/>
+                        <polygon points="100,102 96,138 100,148 104,138" fill="#000000"/>
+                        <text x="100" y="82" font-family="'Rubik Black', sans-serif" font-size="28" font-weight="900" fill="#ffffff" text-anchor="middle">?</text>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="glitch-text">VOXOSINT</h1>
+                    <span class="text-xs text-white tracking-widest opacity-80">GLOBAL CYBER RECONNAISSANCE PLATFORM</span>
+                </div>
+            </div>
+            <div class="bg-black border-2 border-white text-white px-6 py-2 rounded-xl text-xs shadow-[0_0_15px_rgba(255,255,255,0.3)]">
+                STATUS: ENCRYPTED CORE ACTIVE
+            </div>
+        </header>
+
+        <div class="flex gap-4 flex-wrap mb-8">
+            <button class="tool-tab active" onclick="switchTool('discord')">Discord OSINT</button>
+            <button class="tool-tab" onclick="switchTool('custom')">Custom Lookup</button>
+            <button class="tool-tab" onclick="switchTool('ip')">IP & Domain Intel</button>
+            <button class="tool-tab" onclick="switchTool('breach')">Breach Radar</button>
+        </div>
+
+        <div class="workspace">
+            
+            <!-- Discord Module -->
+            <div id="panel-discord" class="tool-panel active">
+                <h3 class="text-2xl text-white mb-2">Discord Reconnaissance Engine</h3>
+                <p class="text-xs text-gray-300 mb-8">Decode Snowflake IDs into exact UTC registration timestamps, process IDs, and CDN vectors.</p>
+                <div class="flex gap-4 mb-8">
+                    <input type="text" id="discord-input" class="osint-input flex-1 heavy-font" placeholder="Enter Discord User ID (e.g. 155149108183695360)...">
+                    <button class="framed-btn !w-auto px-10" onclick="runScan('discord')">SCAN TARGET</button>
+                </div>
+                <div id="loading-discord" class="hidden text-white mb-4 animate-pulse">[-] Querying Discord Gateway...</div>
+                <div id="results-discord" class="results-box"></div>
+            </div>
+
+            <!-- Custom Lookup Module -->
+            <div id="panel-custom" class="tool-panel">
+                <h3 class="panel-title text-2xl text-white mb-2">Custom DNS & Database Indexer</h3>
+                <p class="text-xs text-gray-300 mb-8">Query live DNS-over-HTTPS records across Cloudflare nodes for target domains.</p>
+                <div class="flex gap-4 mb-8">
+                    <input type="text" id="custom-input" class="osint-input flex-1 heavy-font" placeholder="Enter Domain (e.g. google.com)...">
+                    <button class="framed-btn !w-auto px-10" onclick="runScan('custom')">EXECUTE QUERY</button>
+                </div>
+                <div id="loading-custom" class="hidden text-white mb-4 animate-pulse">[-] Performing DNS record resolution...</div>
+                <div id="results-custom" class="results-box"></div>
+            </div>
+
+            <!-- IP Intel Module -->
+            <div id="panel-ip" class="tool-panel">
+                <h3 class="panel-title text-2xl text-white mb-2">IP & Domain Geolocation Telemetry</h3>
+                <p class="text-xs text-gray-300 mb-8">Fetch real-time geolocation, ASN, ISP, and network routing data for any public IP address.</p>
+                <div class="flex gap-4 mb-8">
+                    <input type="text" id="ip-input" class="osint-input flex-1 heavy-font" placeholder="Enter IP (e.g. 8.8.8.8 or leave blank for self)...">
+                    <button class="framed-btn !w-auto px-10" onclick="runScan('ip')">ANALYZE IP</button>
+                </div>
+                <div id="loading-ip" class="hidden text-white mb-4 animate-pulse">[-] Fetching live telemetry...</div>
+                <div id="results-ip" class="results-box"></div>
+            </div>
+
+            <!-- Breach Radar Module -->
+            <div id="panel-breach" class="tool-panel">
+                <h3 class="panel-title text-2xl text-white mb-2">Credential Breach & MX Infrastructure Radar</h3>
+                <p class="text-xs text-gray-300 mb-8">Scan mail server infrastructure and MX records for organizational security audits.</p>
+                <div class="flex gap-4 mb-8">
+                    <input type="text" id="breach-input" class="osint-input flex-1 heavy-font" placeholder="Enter Domain / Organization...">
+                    <button class="framed-btn !w-auto px-10" onclick="runScan('breach')">AUDIT DOMAIN</button>
+                </div>
+                <div id="loading-breach" class="hidden text-white mb-4 animate-pulse">[-] Auditing MX infrastructure...</div>
+                <div id="results-breach" class="results-box"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        function verifyCode() {
+            const val = document.getElementById('passcode-input').value.trim();
+            const err = document.getElementById('error-msg');
+            const screen = document.getElementById('login-screen');
+            const app = document.getElementById('main-app');
+
+            if (val === 'x1') {
+                screen.style.opacity = '0';
+                screen.style.transform = 'scale(1.1)';
+                setTimeout(() => {
+                    screen.style.display = 'none';
+                    app.style.display = 'block';
+                }, 700);
+            } else {
+                err.style.display = 'block';
+            }
+        }
+
+        document.getElementById('passcode-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') verifyCode();
+        });
+
+        function switchTool(toolName) {
+            document.querySelectorAll('.tool-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tool-panel').forEach(p => p.classList.remove('active'));
+
+            if (event && event.target) {
+                event.target.classList.add('active');
+            }
+            document.getElementById('panel-' + toolName).classList.add('active');
+        }
+
+        async function runScan(type) {
+            const inputEl = document.getElementById(type + '-input');
+            const loadingEl = document.getElementById('loading-' + type);
+            const resultsEl = document.getElementById('results-' + type);
+
+            if (!inputEl || !loadingEl || !resultsEl) return;
+            const inputVal = inputEl.value.trim();
+
+            loadingEl.style.display = 'block';
+            resultsEl.style.display = 'none';
+
+            let output = `[+] TARGET: ${inputVal || 'AUTO_SELF'}\n`;
+            output += `[+] SCAN TIMESTAMP: ${new Date().toISOString()}\n`;
+            output += `--------------------------------------------------\n`;
+
+            try {
+                if (type === 'discord') {
+                    if (!/^\d{17,20}$/.test(inputVal)) {
+                        output += `[ERROR] Invalid Discord ID format! Please enter a valid 17-20 digit Snowflake ID.`;
+                    } else {
+                        const epoch = 1420070400000n;
+                        const idBig = BigInt(inputVal);
+                        const timestamp = Number((idBig >> 22n) + epoch);
+                        const creationDate = new Date(timestamp);
+
+                        output += `[SUCCESS] Real Snowflake ID Decoded!\n`;
+                        output += `[ACCOUNT CREATED]: ${creationDate.toUTCString()} (${creationDate.toISOString()})\n`;
+                        output += `[UNIX TIMESTAMP]: ${timestamp} ms\n`;
+                        output += `[WORKER ID]: ${(idBig & 0x3E0000n) >> 17n}\n`;
+                        output += `[PROCESS ID]: ${(idBig & 0x1F000n) >> 12n}\n`;
+                        output += `[INCREMENTAL]: ${idBig & 0xFFFn}\n`;
+                        output += `[PROFILE CDN]: https://cdn.discordapp.com/avatars/${inputVal}/`;
+                    }
+                } else if (type === 'ip') {
+                    const targetIp = inputVal ? inputVal : '';
+                    const res = await fetch(`https://ipapi.co/${targetIp}/json/`);
+                    if (!res.ok) throw new Error('Failed to query IP API');
+                    const data = await res.json();
+
+                    output += `[SUCCESS] Live Telemetry Retrieved!\n`;
+                    output += `[IP ADDRESS] : ${data.ip}\n`;
+                    output += `[CITY / REGION] : ${data.city}, ${data.region} (${data.region_code})\n`;
+                    output += `[COUNTRY] : ${data.country_name} (${data.country_code_iso3})\n`;
+                    output += `[POSTAL CODE] : ${data.postal || 'N/A'}\n`;
+                    output += `[LAT / LONG] : ${data.latitude}, ${data.longitude}\n`;
+                    output += `[TIMEZONE] : ${data.timezone}\n`;
+                    output += `[ASN / NETWORK] : ${data.asn} (${data.org || data.asn})\n`;
+                    output += `[ISP] : ${data.network || data.org}`;
+                } else if (type === 'custom') {
+                    const domain = inputVal.replace(/^(https?:\/\/)?/, '').split('/')[0];
+                    if (!domain) throw new Error('Invalid domain specified');
+
+                    const res = await fetch(`https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(domain)}&type=A`, {
+                        headers: { 'Accept': 'application/dns-json' }
+                    });
+                    const data = await res.json();
+
+                    output += `[SUCCESS] DNS Records Resolved via Cloudflare!\n`;
+                    output += `[DOMAIN]: ${domain}\n`;
+                    if (data.Answer && data.Answer.length > 0) {
+                        data.Answer.forEach(ans => {
+                            output += `[RECORD A]: ${ans.name} -> ${ans.data} (TTL: ${ans.TTL}s)\n`;
+                        });
+                    } else {
+                        output += `[NOTICE] No direct A records found or status: ${data.Status}\n`;
+                    }
+                } else if (type === 'breach') {
+                    const domain = inputVal.replace(/^(https?:\/\/)?/, '').split('/')[0];
+                    if (!domain) throw new Error('Invalid domain specified');
+
+                    const res = await fetch(`https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(domain)}&type=MX`, {
+                        headers: { 'Accept': 'application/dns-json' }
+                    });
+                    const data = await res.json();
+
+                    output += `[SUCCESS] Mail Server Infrastructure Scanned!\n`;
+                    output += `[DOMAIN]: ${domain}\n`;
+                    if (data.Answer && data.Answer.length > 0) {
+                        data.Answer.forEach(ans => {
+                            output += `[MX SERVER]: ${ans.data}\n`;
+                        });
+                    } else {
+                        output += `[STATUS] No active MX records detected for domain.\n`;
+                    }
+                }
+            } catch (err) {
+                output += `[ERROR] Failed to query target: ${err.message}`;
+            } finally {
+                loadingEl.style.display = 'none';
+                resultsEl.style.display = 'block';
+                resultsEl.innerText = output;
+            }
+        }
+
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        let step = 0;
+        function animateGrid() {
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+            ctx.lineWidth = 1.5;
+
+            const rows = 22;
+            const cols = 32;
+            const spacingX = canvas.width / cols;
+            const spacingY = canvas.height / rows;
+
+            step += 0.025;
+
+            for (let r = 0; r <= rows; r++) {
+                ctx.beginPath();
+                for (let c = 0; c <= cols; c++) {
+                    const x = c * spacingX;
+                    const wave = Math.sin(c * 0.45 + step) * Math.cos(r * 0.35 + step) * 28;
+                    const y = (r * spacingY) + wave;
+
+                    if (c === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+            }
+
+            for (let c = 0; c <= cols; c++) {
+                ctx.beginPath();
+                for (let r = 0; r <= rows; r++) {
+                    const x = c * spacingX;
+                    const wave = Math.sin(c * 0.45 + step) * Math.cos(r * 0.35 + step) * 28;
+                    const y = (r * spacingY) + wave;
+
+                    if (r === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+            }
+
+            requestAnimationFrame(animateGrid);
+        }
+        animateGrid();
+    </script>
+</body>
+</html>
